@@ -16,8 +16,14 @@ CREATE SCHEMA LIBRARY;
 
 CREATE TABLE LIBRARY.BOOKS (
     BOOK_ID INTEGER NOT NULL PRIMARY KEY,
-    TITLE VARCHAR(120) NOT NULL
+    TITLE VARCHAR(120) NOT NULL,
+    PUBLISHED_YEAR INTEGER,
+    AVAILABLE BOOLEAN DEFAULT TRUE NOT NULL
 );
+
+INSERT INTO LIBRARY.BOOKS (BOOK_ID, TITLE, PUBLISHED_YEAR, AVAILABLE)
+VALUES (1, 'Clean Code', 2008, TRUE),
+       (2, 'The Pragmatic Programmer', 1999, FALSE);
 ```
 
 The fully qualified table name is `LIBRARY.BOOKS`. You can set the current schema for the connection:
@@ -123,16 +129,23 @@ Use SQL date and timestamp values instead of storing a formatted date as ordinar
 
 ```sql
 CREATE TABLE LIBRARY.LOANS (
-    LOAN_ID INTEGER NOT NULL PRIMARY KEY,
+    LOAN_ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY,
+    BOOK_ID INTEGER NOT NULL,
+    MEMBER_ID INTEGER NOT NULL,
     CHECKED_OUT_ON DATE NOT NULL,
-    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+    RETURNED_ON DATE,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT LOANS_PK PRIMARY KEY (LOAN_ID),
+    CONSTRAINT LOANS_BOOK_FK FOREIGN KEY (BOOK_ID)
+        REFERENCES LIBRARY.BOOKS (BOOK_ID),
+    CONSTRAINT LOANS_MEMBER_FK FOREIGN KEY (MEMBER_ID)
+        REFERENCES LIBRARY.MEMBERS (MEMBER_ID)
 );
 
-INSERT INTO LIBRARY.LOANS (LOAN_ID, CHECKED_OUT_ON)
-VALUES (1, DATE '2026-10-03');
+VALUES (DATE '2026-10-03', CURRENT_TIMESTAMP);
 ```
 
-Typed date values can be compared and sorted as dates. Text dates can be sorted alphabetically, which may not match chronological order when formats differ.
+The `VALUES` statement shows Derby's date and timestamp values without adding a loan row. Typed date values can be compared and sorted as dates. Text dates can be sorted alphabetically, which may not match chronological order when formats differ.
 
 ## Common mistakes
 
